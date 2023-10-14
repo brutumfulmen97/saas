@@ -83,9 +83,14 @@ function UploadDropzone({ isSubscribed }: { isSubscribed: boolean }) {
                         description: "Please try again later",
                         variant: "destructive",
                     });
+                    clearInterval(progressInterval);
+                    setUploadProgress(0);
+                    setIsUploading(false);
+
+                    return;
                 }
 
-                const [fileResponse] = res!;
+                const [fileResponse] = res;
 
                 const key = fileResponse?.key;
 
@@ -95,6 +100,11 @@ function UploadDropzone({ isSubscribed }: { isSubscribed: boolean }) {
                         description: "Please try again later",
                         variant: "destructive",
                     });
+                    clearInterval(progressInterval);
+                    setUploadProgress(0);
+                    setIsUploading(false);
+
+                    return;
                 }
 
                 clearInterval(progressInterval);
