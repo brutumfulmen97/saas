@@ -8,25 +8,30 @@ import {
     Search,
 } from "lucide-react";
 import { Document, Page, pdfjs } from "react-pdf";
+
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import { useToast } from "./ui/use-toast";
+
 import { useResizeDetector } from "react-resize-detector";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { useState } from "react";
+
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { cn } from "@/lib/utils";
 import {
     DropdownMenu,
-    DropdownMenuTrigger,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+
 import SimpleBar from "simplebar-react";
-import PdfFullScreen from "./PdfFullScreen";
+import PdfFullscreen from "./PdfFullScreen";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
@@ -48,26 +53,28 @@ const PdfRenderer = ({ url }: PdfRendererProps) => {
     const CustomPageValidator = z.object({
         page: z
             .string()
-            .refine((val) => Number(val) > 0 && Number(val) <= numPages!),
+            .refine((num) => Number(num) > 0 && Number(num) <= numPages!),
     });
 
-    type CustomPageValidatorType = z.infer<typeof CustomPageValidator>;
+    type TCustomPageValidator = z.infer<typeof CustomPageValidator>;
 
     const {
         register,
         handleSubmit,
         formState: { errors },
         setValue,
-    } = useForm<CustomPageValidatorType>({
+    } = useForm<TCustomPageValidator>({
         defaultValues: {
             page: "1",
         },
         resolver: zodResolver(CustomPageValidator),
     });
 
+    console.log(errors);
+
     const { width, ref } = useResizeDetector();
 
-    const handlePageSubmit = ({ page }: CustomPageValidatorType) => {
+    const handlePageSubmit = ({ page }: TCustomPageValidator) => {
         setCurrPage(Number(page));
         setValue("page", String(page));
     };
@@ -77,26 +84,26 @@ const PdfRenderer = ({ url }: PdfRendererProps) => {
             <div className="h-14 w-full border-b border-zinc-200 flex items-center justify-between px-2">
                 <div className="flex items-center gap-1.5">
                     <Button
-                        variant={"ghost"}
-                        aria-label="previous page"
+                        disabled={currPage <= 1}
                         onClick={() => {
                             setCurrPage((prev) =>
                                 prev - 1 > 1 ? prev - 1 : 1
                             );
                             setValue("page", String(currPage - 1));
                         }}
-                        disabled={currPage <= 1}
+                        variant="ghost"
+                        aria-label="previous page"
                     >
                         <ChevronDown className="h-4 w-4" />
                     </Button>
 
                     <div className="flex items-center gap-1.5">
                         <Input
+                            {...register("page")}
                             className={cn(
-                                "h-8 w-8",
+                                "w-12 h-8",
                                 errors.page && "focus-visible:ring-red-500"
                             )}
-                            {...register("page")}
                             onKeyDown={(e) => {
                                 if (e.key === "Enter") {
                                     handleSubmit(handlePageSubmit)();
@@ -110,17 +117,17 @@ const PdfRenderer = ({ url }: PdfRendererProps) => {
                     </div>
 
                     <Button
-                        variant={"ghost"}
-                        aria-label="next page"
+                        disabled={
+                            numPages === undefined || currPage === numPages
+                        }
                         onClick={() => {
                             setCurrPage((prev) =>
                                 prev + 1 > numPages! ? numPages! : prev + 1
                             );
                             setValue("page", String(currPage + 1));
                         }}
-                        disabled={
-                            numPages === undefined || currPage >= numPages
-                        }
+                        variant="ghost"
+                        aria-label="next page"
                     >
                         <ChevronUp className="h-4 w-4" />
                     </Button>
@@ -130,12 +137,12 @@ const PdfRenderer = ({ url }: PdfRendererProps) => {
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button
-                                variant="ghost"
-                                aria-label="zoom"
                                 className="gap-1.5"
+                                aria-label="zoom"
+                                variant="ghost"
                             >
                                 <Search className="h-4 w-4" />
-                                {scale * 100}%{" "}
+                                {scale * 100}%
                                 <ChevronDown className="h-3 w-3 opacity-50" />
                             </Button>
                         </DropdownMenuTrigger>
@@ -156,14 +163,14 @@ const PdfRenderer = ({ url }: PdfRendererProps) => {
                     </DropdownMenu>
 
                     <Button
-                        variant={"ghost"}
-                        aria-label="rotate 90deg"
                         onClick={() => setRotation((prev) => prev + 90)}
+                        variant="ghost"
+                        aria-label="rotate 90 degrees"
                     >
                         <RotateCw className="h-4 w-4" />
                     </Button>
 
-                    <PdfFullScreen url={url} />
+                    <PdfFullscreen url={url} />
                 </div>
             </div>
 
@@ -194,11 +201,11 @@ const PdfRenderer = ({ url }: PdfRendererProps) => {
                         >
                             {isLoading && renderedScale ? (
                                 <Page
-                                    pageNumber={currPage}
-                                    key={"@" + renderedScale}
                                     width={width ? width : 1}
+                                    pageNumber={currPage}
                                     scale={scale}
                                     rotate={rotation}
+                                    key={"@" + renderedScale}
                                 />
                             ) : null}
 
