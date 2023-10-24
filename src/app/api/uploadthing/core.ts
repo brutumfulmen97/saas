@@ -24,6 +24,11 @@ export const ourFileRouter = {
                     uploadStatus: "PROCESSING",
                 },
             });
+
+            try {
+                const response = await fetch(`https://utfs.io/f/${file.key}`);
+                const blob = await response.blob();
+            } catch (err) {}
         }),
 } satisfies FileRouter;
 
